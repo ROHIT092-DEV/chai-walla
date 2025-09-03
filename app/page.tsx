@@ -2,8 +2,9 @@
 
 import { useUser } from '@clerk/nextjs';
 import Navbar from '@/components/Navbar';
-
 import { useEffect, useState } from 'react';
+
+export const dynamic = 'force-dynamic';
 import { Product } from '@/lib/product';
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart, ArrowRight } from 'lucide-react';

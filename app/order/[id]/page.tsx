@@ -3,6 +3,8 @@
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, use } from 'react';
+
+export const dynamic = 'force-dynamic';
 import { ArrowLeft, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';

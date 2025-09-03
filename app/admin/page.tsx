@@ -5,6 +5,8 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+export const dynamic = 'force-dynamic';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Product, Category } from '@/lib/product';
@@ -37,7 +39,10 @@ export default function AdminPage() {
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<
     'dashboard' | 'orders' | 'products'
-  >(searchParams.get('section') as 'dashboard' | 'orders' | 'products' || 'dashboard');
+  >(
+    (searchParams.get('section') as 'dashboard' | 'orders' | 'products') ||
+      'dashboard'
+  );
   const [orders, setOrders] = useState<Order[]>([]);
 
   interface Order {
@@ -93,7 +98,10 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    const section = searchParams.get('section') as 'dashboard' | 'orders' | 'products';
+    const section = searchParams.get('section') as
+      | 'dashboard'
+      | 'orders'
+      | 'products';
     if (section && ['dashboard', 'orders', 'products'].includes(section)) {
       setActiveSection(section);
     }
@@ -131,10 +139,12 @@ export default function AdminPage() {
 
   const updateOrderStatus = async (orderId: string, status: string) => {
     // Immediate local update for instant feedback
-    setOrders(prev => prev.map(order => 
-      order._id === orderId ? { ...order, status } : order
-    ));
-    
+    setOrders((prev) =>
+      prev.map((order) =>
+        order._id === orderId ? { ...order, status } : order
+      )
+    );
+
     try {
       await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
@@ -149,10 +159,14 @@ export default function AdminPage() {
 
   const approvePayment = async (orderId: string) => {
     // Immediate local update for instant feedback
-    setOrders(prev => prev.map(order => 
-      order._id === orderId ? { ...order, paymentStatus: 'completed', status: 'paid' } : order
-    ));
-    
+    setOrders((prev) =>
+      prev.map((order) =>
+        order._id === orderId
+          ? { ...order, paymentStatus: 'completed', status: 'paid' }
+          : order
+      )
+    );
+
     try {
       await fetch(`/api/orders/${orderId}/payment`, {
         method: 'PATCH',
@@ -172,10 +186,12 @@ export default function AdminPage() {
 
   const rejectPayment = async (orderId: string) => {
     // Immediate local update for instant feedback
-    setOrders(prev => prev.map(order => 
-      order._id === orderId ? { ...order, paymentStatus: 'failed' } : order
-    ));
-    
+    setOrders((prev) =>
+      prev.map((order) =>
+        order._id === orderId ? { ...order, paymentStatus: 'failed' } : order
+      )
+    );
+
     try {
       await fetch(`/api/orders/${orderId}/payment`, {
         method: 'PATCH',
@@ -501,7 +517,7 @@ export default function AdminPage() {
                           Order Items
                         </h4>
                         <div className="space-y-2">
-                          {order.items?.map((item, index: number) => (
+                          {order.items?.map((item, index) => (
                             <div
                               key={index}
                               className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded"
@@ -517,7 +533,7 @@ export default function AdminPage() {
                               <span className="font-medium text-sm">
                                 ₹
                                 {(
-                                  (item.product?.price || item.price) *
+                                  (item.product?.price || item.price || 0) *
                                   item.quantity
                                 ).toFixed(2)}
                               </span>

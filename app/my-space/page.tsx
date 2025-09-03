@@ -5,6 +5,8 @@ import { useUserRole } from '@/hooks/useUserRole';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+
+export const dynamic = 'force-dynamic';
 import { ArrowLeft, User, Mail, Calendar, Shield, LogOut, Settings, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
