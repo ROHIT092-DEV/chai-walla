@@ -39,10 +39,8 @@ export default function AdminPage() {
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<
     'dashboard' | 'orders' | 'products'
-  >(
-    (searchParams.get('section') as 'dashboard' | 'orders' | 'products') ||
-      'dashboard'
-  );
+  >('dashboard');
+  const [mounted, setMounted] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
 
   interface Order {
@@ -98,6 +96,7 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
     const section = searchParams.get('section') as
       | 'dashboard'
       | 'orders'
@@ -106,6 +105,14 @@ export default function AdminPage() {
       setActiveSection(section);
     }
   }, [searchParams]);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   const fetchProducts = async () => {
     try {

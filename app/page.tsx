@@ -34,25 +34,33 @@ export default function Home() {
   const fetchFeaturedProducts = async () => {
     try {
       const response = await fetch('/api/products/featured');
-      const data = await response.json();
-      setFeaturedProducts(data);
+      if (response.ok) {
+        const data = await response.json();
+        setFeaturedProducts(Array.isArray(data) ? data : []);
+      } else {
+        setFeaturedProducts([]);
+      }
     } catch (error) {
       console.error('Error fetching featured products:', error);
+      setFeaturedProducts([]);
     }
   };
 
   const fetchStats = async () => {
     try {
       const response = await fetch('/api/stats');
-      if (!response.ok) {
-        console.error('Stats API error:', response.status);
-        return;
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      } else {
+        setStats({
+          totalCustomers: 500,
+          totalProducts: 50,
+          averageRating: 4.8
+        });
       }
-      const data = await response.json();
-      setStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
-      // Use fallback data if API fails
       setStats({
         totalCustomers: 500,
         totalProducts: 50,

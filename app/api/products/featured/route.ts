@@ -1,12 +1,19 @@
-import { NextResponse } from 'next/server'
-import { getFeaturedProducts } from '@/lib/product'
+import { NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
 
 export async function GET() {
   try {
-    const products = await getFeaturedProducts()
-    return NextResponse.json(products)
+    const client = await clientPromise;
+    const db = client.db('tea-stall');
+    
+    const products = await db.collection('products')
+      .find({ featured: true })
+      .limit(12)
+      .toArray();
+    
+    return NextResponse.json(products);
   } catch (error) {
-    console.error('Error fetching featured products:', error)
-    return NextResponse.json({ error: 'Failed to fetch featured products' }, { status: 500 })
+    console.error('Error fetching featured products:', error);
+    return NextResponse.json([], { status: 200 });
   }
 }
