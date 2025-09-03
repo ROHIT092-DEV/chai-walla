@@ -25,7 +25,7 @@ interface Order {
 }
 
 export default function OrderPage({ params }: { params: Promise<{ id: string }> }) {
-  const { user } = useUser();
+  const { isLoaded } = useUser();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,12 +35,10 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
     fetchOrder();
     
     // Setup polling for real-time updates
-    const interval = setInterval(() => {
-      fetchOrder();
-    }, 500); // Poll every 500ms for near real-time
+    const interval = setInterval(fetchOrder, 500);
     
     return () => clearInterval(interval);
-  }, [resolvedParams.id]);
+  }, [resolvedParams.id, fetchOrder]);
 
   const fetchOrder = async () => {
     try {

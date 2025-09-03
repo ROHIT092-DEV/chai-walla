@@ -25,12 +25,12 @@ export async function GET(request: NextRequest) {
   });
 }
 
-export function broadcast(data: any) {
+export function broadcast(data: { type: string; orderId?: string; order?: unknown; paymentStatus?: string }) {
   const message = `data: ${JSON.stringify(data)}\n\n`;
   clients.forEach(client => {
     try {
       client.enqueue(message);
-    } catch (error) {
+    } catch {
       clients.delete(client);
     }
   });

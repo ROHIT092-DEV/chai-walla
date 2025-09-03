@@ -5,7 +5,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, User, Mail, Calendar, Shield, LogOut, Settings, Package, BarChart3 } from 'lucide-react';
+import { ArrowLeft, User, Mail, Calendar, Shield, LogOut, Settings, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function MySpacePage() {
@@ -13,7 +13,20 @@ export default function MySpacePage() {
   const { role, loading } = useUserRole();
   const { signOut } = useClerk();
   const router = useRouter();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  interface Order {
+    _id: string;
+    items: Array<{
+      product?: { name: string; price: number };
+      name?: string;
+      price?: number;
+      quantity: number;
+    }>;
+    totalAmount: number;
+    status: string;
+    createdAt: string;
+  }
   const [loadingOrders, setLoadingOrders] = useState(true);
 
   useEffect(() => {

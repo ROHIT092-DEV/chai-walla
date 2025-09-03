@@ -2,7 +2,7 @@
 
 import { useUser } from '@clerk/nextjs';
 import Navbar from '@/components/Navbar';
-import Link from 'next/link';
+
 import { useEffect, useState } from 'react';
 import { Product } from '@/lib/product';
 import { useCart } from '@/contexts/CartContext';
@@ -115,7 +115,7 @@ export default function Home() {
                 transition={{ duration: 0.8 }}
               >
                 <div className="inline-flex items-center bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
-                  ⚡ India's #1 Tea Stall Platform
+                  ⚡ India&apos;s #1 Tea Stall Platform
                 </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black mb-6 leading-tight">
                   Sip. Savor.
@@ -226,7 +226,7 @@ export default function Home() {
                 🔥 Trending Products
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Discover what's hot and popular among our customers
+                Discover what&apos;s hot and popular among our customers
               </p>
             </motion.div>
 
@@ -263,13 +263,16 @@ export default function Home() {
                           className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement!.innerHTML = `
-                              <div class="w-full h-full bg-gray-100 flex items-center justify-center">
-                                <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M2 21h19v-3H2v3zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zm-8.5 0h-3V6h3v2zm7.5 0h-3V6h3v2z"/>
-                                </svg>
-                              </div>
-                            `;
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = `
+                                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                  <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M2 21h19v-3H2v3zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zm-8.5 0h-3V6h3v2zm7.5 0h-3V6h3v2z"/>
+                                  </svg>
+                                </div>
+                              `;
+                            }
                           }}
                         />
                       ) : (

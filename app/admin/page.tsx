@@ -12,7 +12,6 @@ import {
   Plus,
   Edit,
   Trash2,
-  Upload,
   Tag,
   X,
   Image as ImageIcon,
@@ -39,7 +38,22 @@ export default function AdminPage() {
   const [activeSection, setActiveSection] = useState<
     'dashboard' | 'orders' | 'products'
   >(searchParams.get('section') as 'dashboard' | 'orders' | 'products' || 'dashboard');
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  interface Order {
+    _id: string;
+    userId: string;
+    items: Array<{
+      product?: { name: string; price: number };
+      name?: string;
+      price?: number;
+      quantity: number;
+    }>;
+    totalAmount: number;
+    status: string;
+    paymentStatus: string;
+    createdAt: string;
+  }
   const [uploading, setUploading] = useState(false);
   const [productForm, setProductForm] = useState({
     name: '',
@@ -487,7 +501,7 @@ export default function AdminPage() {
                           Order Items
                         </h4>
                         <div className="space-y-2">
-                          {order.items?.map((item: any, index: number) => (
+                          {order.items?.map((item, index: number) => (
                             <div
                               key={index}
                               className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded"
