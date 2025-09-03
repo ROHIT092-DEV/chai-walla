@@ -6,6 +6,12 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ['mongodb'],
+  },
+  async generateStaticParams() {
+    return [];
+  },
 }
 
 module.exports = nextConfig
