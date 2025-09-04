@@ -55,6 +55,7 @@ export default function AdminPage() {
     totalAmount: number;
     status: string;
     paymentStatus: string;
+    adminReason?: string;
     createdAt: string;
   }
   const [uploading, setUploading] = useState(false);
@@ -71,6 +72,8 @@ export default function AdminPage() {
     name: '',
     description: '',
   });
+  const [reasonInputs, setReasonInputs] = useState<{[key: string]: string}>({});
+  const [showReasonInput, setShowReasonInput] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     if (isLoaded && !loading) {
@@ -144,11 +147,11 @@ export default function AdminPage() {
     );
   }
 
-  const updateOrderStatus = async (orderId: string, status: string) => {
+  const updateOrderStatus = async (orderId: string, status: string, reason?: string) => {
     // Immediate local update for instant feedback
     setOrders((prev) =>
       prev.map((order) =>
-        order._id === orderId ? { ...order, status } : order
+        order._id === orderId ? { ...order, status, adminReason: reason } : order
       )
     );
 
@@ -156,8 +159,10 @@ export default function AdminPage() {
       await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, adminReason: reason }),
       });
+      setShowReasonInput({ ...showReasonInput, [orderId]: false });
+      setReasonInputs({ ...reasonInputs, [orderId]: '' });
     } catch (error) {
       console.error('Error updating order:', error);
       fetchOrders(); // Revert on error
@@ -596,7 +601,7 @@ export default function AdminPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => rejectPayment(order._id)}
+                              onClick={() => setShowReasonInput({ ...showReasonInput, [order._id]: true })}
                               className="border-red-300 text-red-600 hover:bg-red-50"
                             >
                               ✗ Reject Payment
@@ -645,15 +650,50 @@ export default function AdminPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() =>
-                                updateOrderStatus(order._id, 'cancelled')
-                              }
+                              onClick={() => setShowReasonInput({ ...showReasonInput, [order._id]: true })}
                               className="border-red-300 text-red-600 hover:bg-red-50"
                             >
                               ❌ Cancel Order
                             </Button>
                           )}
                       </div>
+                      
+                      {/* Reason Input */}
+                      {showReasonInput[order._id] && (
+                        <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                          <h4 className="font-medium text-gray-900 mb-2">Reason for Action</h4>
+                          <textarea
+                            value={reasonInputs[order._id] || ''}
+                            onChange={(e) => setReasonInputs({ ...reasonInputs, [order._id]: e.target.value })}
+                            placeholder="Please provide a reason..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            rows={3}
+                          />
+                          <div className="flex space-x-2 mt-3">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                if (order.paymentStatus === 'submitted') {
+                                  rejectPayment(order._id);
+                                } else {
+                                  updateOrderStatus(order._id, 'cancelled', reasonInputs[order._id]);
+                                }
+                              }}
+                              className="bg-red-500 hover:bg-red-600"
+                              disabled={!reasonInputs[order._id]?.trim()}
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setShowReasonInput({ ...showReasonInput, [order._id]: false })}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
