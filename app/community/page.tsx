@@ -3,7 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import Navbar from '@/components/Navbar';
 import { useEffect, useState } from 'react';
-import { Star, MessageCircle, Coffee, Plus, Image, Video, Send, Heart, Smile } from 'lucide-react';
+import { Star, MessageCircle, Coffee, Plus, Image, Video, Send, Heart, Smile, MoreVertical, Trash2, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Post {
@@ -26,6 +26,7 @@ interface Post {
 
 export default function CommunityPage() {
   const { user } = useUser();
+  const [userRole, setUserRole] = useState<string>('user');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -40,10 +41,27 @@ export default function CommunityPage() {
   const [likingPosts, setLikingPosts] = useState<{[key: string]: boolean}>({});
   const [reactingPosts, setReactingPosts] = useState<{[key: string]: boolean}>({});
   const [commentingPosts, setCommentingPosts] = useState<{[key: string]: boolean}>({});
+  const [showPostMenu, setShowPostMenu] = useState<{[key: string]: boolean}>({});
+  const [deletingPosts, setDeletingPosts] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+    if (user) {
+      fetchUserRole();
+    }
+  }, [user]);
+
+  const fetchUserRole = async () => {
+    try {
+      const response = await fetch('/api/user/role');
+      if (response.ok) {
+        const data = await response.json();
+        setUserRole(data.role || 'user');
+      }
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,9 +77,20 @@ export default function CommunityPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as Element).closest('.post-menu')) {
+        setShowPostMenu({});
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const fetchPosts = async () => {
     try {
-      const response = await fetch('/api/posts');
+      const response = await fetch('/api/posts?limit=5'); // Load only 5 posts initially
       if (response.ok) {
         const data = await response.json();
         setPosts(data);
@@ -76,14 +105,47 @@ export default function CommunityPage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // File size limit: 5MB for images, 10MB for videos
+      const maxSize = file.type.startsWith('video/') ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert(`File too large. Max size: ${file.type.startsWith('video/') ? '10MB' : '5MB'}`);
+        return;
+      }
+      
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = () => {
-        setFilePreview(reader.result as string);
+        const result = reader.result as string;
+        setFilePreview(result);
+        
         if (file.type.startsWith('image/')) {
-          setNewPost({ ...newPost, image: reader.result as string, video: '' });
+          // Compress image
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d')!;
+            
+            // Resize if too large
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let { width, height } = img;
+            
+            if (width > maxWidth || height > maxHeight) {
+              const ratio = Math.min(maxWidth / width, maxHeight / height);
+              width *= ratio;
+              height *= ratio;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            const compressed = canvas.toDataURL('image/jpeg', 0.7);
+            setNewPost({ ...newPost, image: compressed, video: '' });
+          };
+          img.src = result;
         } else if (file.type.startsWith('video/')) {
-          setNewPost({ ...newPost, video: reader.result as string, image: '' });
+          setNewPost({ ...newPost, video: result, image: '' });
         }
       };
       reader.readAsDataURL(file);
@@ -171,6 +233,28 @@ export default function CommunityPage() {
     }
   };
 
+  const deletePost = async (postId: string) => {
+    if (deletingPosts[postId]) return;
+    
+    setDeletingPosts({ ...deletingPosts, [postId]: true });
+    try {
+      const response = await fetch('/api/posts/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId })
+      });
+      
+      if (response.ok) {
+        fetchPosts();
+        setShowPostMenu({ ...showPostMenu, [postId]: false });
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    } finally {
+      setDeletingPosts({ ...deletingPosts, [postId]: false });
+    }
+  };
+
   const renderStars = (rating: number) => {
     return [...Array(5)].map((_, i) => (
       <Star
@@ -242,9 +326,9 @@ export default function CommunityPage() {
                   {filePreview && (
                     <div className="mt-3 relative">
                       {selectedFile?.type.startsWith('image/') ? (
-                        <img src={filePreview} alt="Preview" className="w-full max-h-48 object-cover rounded-lg" />
+                        <img src={filePreview} alt="Preview" className="w-full max-h-48 object-cover rounded-lg" loading="lazy" />
                       ) : (
-                        <video src={filePreview} className="w-full max-h-48 rounded-lg" controls />
+                        <video src={filePreview} className="w-full max-h-48 rounded-lg" controls preload="metadata" />
                       )}
                       <button
                         onClick={() => {
@@ -353,6 +437,35 @@ export default function CommunityPage() {
                           {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                       </div>
+                      
+                      {/* Admin controls */}
+                      {userRole === 'admin' && (
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowPostMenu({ ...showPostMenu, [post._id]: !showPostMenu[post._id] })}
+                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                          >
+                            <MoreVertical className="w-4 h-4 text-gray-500" />
+                          </button>
+                          
+                          {showPostMenu[post._id] && (
+                            <div className="post-menu absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-30 w-32">
+                              <button
+                                onClick={() => deletePost(post._id)}
+                                disabled={deletingPosts[post._id]}
+                                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 disabled:opacity-50"
+                              >
+                                {deletingPosts[post._id] ? (
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500"></div>
+                                ) : (
+                                  <Trash2 className="w-3 h-3" />
+                                )}
+                                <span>{deletingPosts[post._id] ? 'Deleting...' : 'Delete'}</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
                     <p className="text-gray-700 leading-relaxed mb-3 lg:mb-4 text-sm lg:text-base">
@@ -364,6 +477,7 @@ export default function CommunityPage() {
                         <img
                           src={post.image}
                           alt="Post image"
+                          loading="lazy"
                           className="w-full max-h-64 lg:max-h-96 object-cover rounded-lg lg:rounded-xl"
                         />
                       </div>
@@ -374,6 +488,7 @@ export default function CommunityPage() {
                         <video
                           src={post.video}
                           controls
+                          preload="metadata"
                           className="w-full max-h-64 lg:max-h-96 rounded-lg lg:rounded-xl"
                         />
                       </div>

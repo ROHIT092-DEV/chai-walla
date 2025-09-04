@@ -32,8 +32,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '5'), 20); // Max 20 posts
+    
     const client = await clientPromise;
     const db = client.db('tea-stall');
     
@@ -48,7 +51,7 @@ export async function GET() {
           }
         },
         { $sort: { createdAt: -1 } },
-        { $limit: 20 }
+        { $limit: limit }
       ]).toArray();
 
     return NextResponse.json(posts);

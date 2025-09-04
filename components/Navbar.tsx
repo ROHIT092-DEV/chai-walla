@@ -20,13 +20,15 @@ export default function Navbar() {
       {/* Top Header - Instagram Style */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
         <div className="px-4 py-3 flex items-center justify-between max-w-5xl mx-auto">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
-              <Coffee className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-semibold text-gray-900 tracking-tight">
-              Tea Stall
-            </span>
+          <Link href="/" className="flex items-center">
+            <h1 className="text-2xl font-bold text-gray-900" style={{
+              fontFamily: 'Billabong, cursive',
+              fontSize: '28px',
+              fontWeight: '400',
+              letterSpacing: '0.5px'
+            }}>
+              TeaStall
+            </h1>
           </Link>
           
           <div className="flex items-center space-x-3">
