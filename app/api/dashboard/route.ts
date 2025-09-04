@@ -6,10 +6,11 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db('tea-stall');
 
-    const [totalUsers, totalProducts, totalOrders] = await Promise.all([
+    const [totalUsers, totalProducts, totalOrders, totalPosts] = await Promise.all([
       db.collection('users').countDocuments(),
       db.collection('products').countDocuments(),
-      db.collection('orders').countDocuments()
+      db.collection('orders').countDocuments(),
+      db.collection('posts').countDocuments()
     ]);
 
     const revenue = await db.collection('orders')
@@ -23,7 +24,7 @@ export async function GET() {
         totalUsers: totalUsers || 150,
         totalProducts: totalProducts || 25,
         totalOrders: totalOrders || 89,
-        averageRating: 4.8,
+        totalPosts: totalPosts || 42,
         totalRevenue: revenue[0]?.total || 15420
       },
       growth: {
@@ -38,7 +39,7 @@ export async function GET() {
         totalUsers: 150,
         totalProducts: 25,
         totalOrders: 89,
-        averageRating: 4.8,
+        totalPosts: 42,
         totalRevenue: 15420
       },
       growth: {
