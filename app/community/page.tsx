@@ -36,6 +36,10 @@ export default function CommunityPage() {
   const [expandedComments, setExpandedComments] = useState<{[key: string]: boolean}>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState<{[key: string]: boolean}>({});
   const [showLikesModal, setShowLikesModal] = useState<{[key: string]: boolean}>({});
+  const [isPosting, setIsPosting] = useState(false);
+  const [likingPosts, setLikingPosts] = useState<{[key: string]: boolean}>({});
+  const [reactingPosts, setReactingPosts] = useState<{[key: string]: boolean}>({});
+  const [commentingPosts, setCommentingPosts] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     fetchPosts();
@@ -87,8 +91,9 @@ export default function CommunityPage() {
   };
 
   const createPost = async () => {
-    if (!user || !newPost.content.trim()) return;
+    if (!user || !newPost.content.trim() || isPosting) return;
     
+    setIsPosting(true);
     try {
       const response = await fetch('/api/posts', {
         method: 'POST',
@@ -105,12 +110,15 @@ export default function CommunityPage() {
       }
     } catch (error) {
       console.error('Error creating post:', error);
+    } finally {
+      setIsPosting(false);
     }
   };
 
   const toggleLike = async (postId: string) => {
-    if (!user) return;
+    if (!user || likingPosts[postId]) return;
     
+    setLikingPosts({ ...likingPosts, [postId]: true });
     try {
       await fetch('/api/posts/like', {
         method: 'POST',
@@ -120,12 +128,15 @@ export default function CommunityPage() {
       fetchPosts();
     } catch (error) {
       console.error('Error toggling like:', error);
+    } finally {
+      setLikingPosts({ ...likingPosts, [postId]: false });
     }
   };
 
   const addReaction = async (postId: string, emoji: string) => {
-    if (!user) return;
+    if (!user || reactingPosts[postId]) return;
     
+    setReactingPosts({ ...reactingPosts, [postId]: true });
     try {
       await fetch('/api/posts/react', {
         method: 'POST',
@@ -136,12 +147,15 @@ export default function CommunityPage() {
       fetchPosts();
     } catch (error) {
       console.error('Error adding reaction:', error);
+    } finally {
+      setReactingPosts({ ...reactingPosts, [postId]: false });
     }
   };
 
   const addComment = async (postId: string) => {
-    if (!user || !commentInputs[postId]?.trim()) return;
+    if (!user || !commentInputs[postId]?.trim() || commentingPosts[postId]) return;
     
+    setCommentingPosts({ ...commentingPosts, [postId]: true });
     try {
       await fetch('/api/posts/comment', {
         method: 'POST',
@@ -152,6 +166,8 @@ export default function CommunityPage() {
       fetchPosts();
     } catch (error) {
       console.error('Error adding comment:', error);
+    } finally {
+      setCommentingPosts({ ...commentingPosts, [postId]: false });
     }
   };
 
@@ -282,11 +298,15 @@ export default function CommunityPage() {
                       </button>
                       <button
                         onClick={createPost}
-                        disabled={!newPost.content.trim()}
+                        disabled={!newPost.content.trim() || isPosting}
                         className="bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white px-4 lg:px-6 py-2 rounded-lg lg:rounded-xl font-medium text-sm lg:text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                       >
-                        <Send className="w-4 h-4" />
-                        <span>Post</span>
+                        {isPosting ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                        <span>{isPosting ? 'Posting...' : 'Post'}</span>
                       </button>
                     </div>
                   </div>
@@ -365,13 +385,18 @@ export default function CommunityPage() {
                         <div className="relative">
                           <button
                             onClick={() => toggleLike(post._id)}
-                            className="relative transition-transform hover:scale-110 active:scale-95"
+                            disabled={likingPosts[post._id]}
+                            className="relative transition-transform hover:scale-110 active:scale-95 disabled:opacity-50"
                           >
-                            <Heart className={`w-6 h-6 ${
-                              post.likes.includes(user?.id || '') 
-                                ? 'text-red-500 fill-current' 
-                                : 'text-gray-900 hover:text-gray-600'
-                            }`} />
+                            {likingPosts[post._id] ? (
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+                            ) : (
+                              <Heart className={`w-6 h-6 ${
+                                post.likes.includes(user?.id || '') 
+                                  ? 'text-red-500 fill-current' 
+                                  : 'text-gray-900 hover:text-gray-600'
+                              }`} />
+                            )}
                             {post.likes.length > 0 && (
                               <span 
                                 onClick={(e) => {
@@ -421,9 +446,14 @@ export default function CommunityPage() {
                         <div className="relative group">
                           <button
                             onClick={() => setShowEmojiPicker({ ...showEmojiPicker, [post._id]: !showEmojiPicker[post._id] })}
-                            className="relative transition-transform hover:scale-110 active:scale-95"
+                            disabled={reactingPosts[post._id]}
+                            className="relative transition-transform hover:scale-110 active:scale-95 disabled:opacity-50"
                           >
-                            <Smile className="w-6 h-6 text-gray-900 hover:text-yellow-600" />
+                            {reactingPosts[post._id] ? (
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-500"></div>
+                            ) : (
+                              <Smile className="w-6 h-6 text-gray-900 hover:text-yellow-600" />
+                            )}
                             {Object.values(post.reactions || {}).flat().length > 0 && (
                               <span className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                                 {Object.values(post.reactions || {}).flat().length}
@@ -537,9 +567,13 @@ export default function CommunityPage() {
                           {commentInputs[post._id]?.trim() && (
                             <button
                               onClick={() => addComment(post._id)}
-                              className="text-blue-500 hover:text-blue-700 font-semibold text-sm"
+                              disabled={commentingPosts[post._id]}
+                              className="text-blue-500 hover:text-blue-700 font-semibold text-sm disabled:opacity-50 flex items-center space-x-1"
                             >
-                              Post
+                              {commentingPosts[post._id] && (
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                              )}
+                              <span>{commentingPosts[post._id] ? 'Posting...' : 'Post'}</span>
                             </button>
                           )}
                         </div>
