@@ -105,22 +105,22 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50 pt-20 p-4">
+      <div className="min-h-screen bg-gray-50 pt-16 pb-20 lg:pt-20 lg:pb-6 p-4">
         <div className="max-w-md mx-auto">
-          <div className="flex items-center mb-6">
+          <div className="flex items-center mb-4 lg:mb-6">
             <button onClick={() => router.push('/')} className="mr-3 p-2 hover:bg-gray-100 rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Order #{order._id.slice(-6)}</h1>
-              <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
+              <h1 className="text-lg lg:text-xl font-bold text-gray-900">Order #{order._id.slice(-6)}</h1>
+              <p className="text-xs lg:text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
             </div>
           </div>
 
           {/* Order Status Card */}
-          <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Order Status</h2>
+          <div className="bg-white rounded-xl shadow-sm border p-4 lg:p-6 mb-4 lg:mb-6">
+            <div className="flex items-center justify-between mb-4 lg:mb-6">
+              <h2 className="text-base lg:text-lg font-semibold text-gray-900">Order Status</h2>
               <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
                 {order.status === 'pending' && '📋 Order Placed'}
                 {order.status === 'paid' && '💳 Payment Received'}
@@ -132,26 +132,26 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
             </div>
 
             {/* Progress Timeline */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
+            <div className="space-y-3 lg:space-y-4">
+              <div className="flex items-center space-x-3 lg:space-x-4">
                 <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
                   order.paymentStatus === 'completed' ? 'bg-green-500' : 
                   order.paymentStatus === 'submitted' ? 'bg-yellow-500' :
                   order.paymentStatus === 'failed' ? 'bg-red-500' : 'bg-gray-300'
                 }`}>
-                  {order.paymentStatus === 'completed' && <CheckCircle className="w-3 h-3 text-white" />}
-                  {order.paymentStatus === 'submitted' && <Clock className="w-3 h-3 text-white" />}
-                  {order.paymentStatus === 'failed' && <XCircle className="w-3 h-3 text-white" />}
-                  {order.paymentStatus === 'pending' && <Clock className="w-3 h-3 text-gray-600" />}
+                  {order.paymentStatus === 'completed' && <CheckCircle className="w-2.5 lg:w-3 h-2.5 lg:h-3 text-white" />}
+                  {order.paymentStatus === 'submitted' && <Clock className="w-2.5 lg:w-3 h-2.5 lg:h-3 text-white" />}
+                  {order.paymentStatus === 'failed' && <XCircle className="w-2.5 lg:w-3 h-2.5 lg:h-3 text-white" />}
+                  {order.paymentStatus === 'pending' && <Clock className="w-2.5 lg:w-3 h-2.5 lg:h-3 text-gray-600" />}
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-sm">
+                  <p className="font-medium text-xs lg:text-sm">
                     {order.paymentStatus === 'completed' ? '✓ Payment Confirmed' : 
                      order.paymentStatus === 'submitted' ? '⏳ Payment Under Review' :
                      order.paymentStatus === 'failed' ? '✗ Payment Failed' : 
                      '⏳ Payment Pending'}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs lg:text-sm text-gray-500">
                     {order.paymentStatus === 'completed' ? 'Your payment has been successfully processed' : 
                      order.paymentStatus === 'submitted' ? 'Admin is reviewing your payment confirmation' :
                      order.paymentStatus === 'failed' ? 'Please retry payment at the counter' : 
@@ -219,23 +219,23 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
           </div>
 
           {/* Order Items Card */}
-          <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
-            <div className="space-y-3">
+          <div className="bg-white rounded-xl shadow-sm border p-4 lg:p-6 mb-4 lg:mb-6">
+            <h2 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">Order Summary</h2>
+            <div className="space-y-2 lg:space-y-3">
               {order.items.map((item, index) => (
-                <div key={index} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{item.product?.name || item.name}</p>
-                    <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                <div key={index} className="flex justify-between items-center py-2 lg:py-3 border-b border-gray-100 last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-sm lg:text-base truncate">{item.product?.name || item.name}</p>
+                    <p className="text-xs lg:text-sm text-gray-500">Quantity: {item.quantity}</p>
                   </div>
-                  <p className="font-semibold text-gray-900">₹{((item.product?.price || item.price) * item.quantity).toFixed(2)}</p>
+                  <p className="font-semibold text-gray-900 text-sm lg:text-base ml-2">₹{((item.product?.price || item.price) * item.quantity).toFixed(2)}</p>
                 </div>
               ))}
             </div>
-            <div className="border-t border-gray-200 pt-4 mt-4">
+            <div className="border-t border-gray-200 pt-3 lg:pt-4 mt-3 lg:mt-4">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold text-gray-900">Total Amount</span>
-                <span className="text-xl font-bold text-green-600">₹{order.totalAmount.toFixed(2)}</span>
+                <span className="text-base lg:text-lg font-semibold text-gray-900">Total Amount</span>
+                <span className="text-lg lg:text-xl font-bold text-green-600">₹{order.totalAmount.toFixed(2)}</span>
               </div>
             </div>
           </div>

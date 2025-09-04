@@ -140,16 +140,16 @@ export default function ProductsPage() {
     <>
       <Navbar />
       
-      <main className="min-h-screen bg-gray-50 pt-20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <main className="min-h-screen bg-gray-50 pt-16 pb-20 lg:pt-20 lg:pb-6">
+        <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2">All Products</h1>
-            <p className="text-gray-600">Browse our complete collection</p>
+          <div className="mb-4 lg:mb-6">
+            <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-1 lg:mb-2">All Products</h1>
+            <p className="text-sm lg:text-base text-gray-600">Browse our complete collection</p>
           </div>
 
           {/* Search Bar */}
-          <div className="mb-6">
+          <div className="mb-4 lg:mb-6">
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -157,13 +157,13 @@ export default function ProductsPage() {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 lg:py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-3 lg:p-4 mb-4 lg:mb-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex items-center space-x-2">
                 <Filter className="w-4 h-4 text-gray-500" />
@@ -197,10 +197,10 @@ export default function ProductsPage() {
           </div>
 
           {/* Products Grid - Flipkart Style */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 lg:gap-3">
             {filteredProducts.map((product) => (
               <div key={product._id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                <div className="aspect-square bg-gray-100 p-2">
+                <div className="aspect-square bg-gray-100 p-1.5 lg:p-2">
                   {product.image ? (
                     <img
                       src={`${process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}${product.image}`}
@@ -210,7 +210,7 @@ export default function ProductsPage() {
                         e.currentTarget.style.display = 'none'
                         e.currentTarget.parentElement!.innerHTML = `
                           <div class="w-full h-full bg-gray-100 flex items-center justify-center">
-                            <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-6 lg:w-8 h-6 lg:h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M2 21h19v-3H2v3zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zm-8.5 0h-3V6h3v2zm7.5 0h-3V6h3v2z"/>
                             </svg>
                           </div>
@@ -219,35 +219,35 @@ export default function ProductsPage() {
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 lg:w-8 h-6 lg:h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M2 21h19v-3H2v3zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zm-8.5 0h-3V6h3v2zm7.5 0h-3V6h3v2z"/>
                       </svg>
                     </div>
                   )}
                 </div>
                 
-                <div className="p-3">
-                  <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2 leading-tight">{product.name}</h3>
-                  <div className="mb-2">
-                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                <div className="p-2 lg:p-3">
+                  <h3 className="font-medium text-gray-900 text-xs lg:text-sm mb-1 line-clamp-2 leading-tight">{product.name}</h3>
+                  <div className="mb-1.5 lg:mb-2">
+                    <span className="text-xs text-blue-600 bg-blue-50 px-1.5 lg:px-2 py-0.5 lg:py-1 rounded">
                       {getCategoryName(product.categoryId)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg font-bold text-gray-900">₹{product.price}</span>
+                  <div className="flex items-center justify-between mb-1.5 lg:mb-2">
+                    <span className="text-base lg:text-lg font-bold text-gray-900">₹{product.price}</span>
                   </div>
                   
                   {product.stock > 0 ? (
                     <button 
                       onClick={() => handleAddToCart(product)}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white py-1.5 rounded text-sm font-medium transition-colors"
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white py-1.5 lg:py-2 rounded text-xs lg:text-sm font-medium transition-colors"
                     >
                       Add to Cart
                     </button>
                   ) : (
                     <button 
                       disabled
-                      className="w-full bg-gray-300 text-gray-500 py-1.5 rounded text-sm cursor-not-allowed"
+                      className="w-full bg-gray-300 text-gray-500 py-1.5 lg:py-2 rounded text-xs lg:text-sm cursor-not-allowed"
                     >
                       Out of Stock
                     </button>

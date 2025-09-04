@@ -86,54 +86,54 @@ export default function MySpacePage() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50 pt-20 pb-20 lg:pb-6">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center mb-6">
+      <div className="min-h-screen bg-gray-50 pt-16 pb-20 lg:pt-20 lg:pb-6">
+        <div className="max-w-4xl mx-auto px-4 py-4 lg:py-6">
+          <div className="flex items-center mb-4 lg:mb-6">
             <button 
               onClick={() => router.push('/')} 
-              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="mr-3 lg:mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">My Profile</h1>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-sm border p-6">
+              <div className="bg-white rounded-xl shadow-sm border p-4 lg:p-6">
                 <div className="text-center">
                   <img
                     src={user.imageUrl}
                     alt={user.fullName || 'User'}
-                    className="w-20 h-20 rounded-full mx-auto mb-4"
+                    className="w-16 lg:w-20 h-16 lg:h-20 rounded-full mx-auto mb-3 lg:mb-4"
                   />
-                  <h2 className="text-xl font-semibold text-gray-900 mb-1">
+                  <h2 className="text-lg lg:text-xl font-semibold text-gray-900 mb-1">
                     {user.fullName || 'User'}
                   </h2>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-sm lg:text-base text-gray-600 mb-3 lg:mb-4">
                     {user.primaryEmailAddress?.emailAddress}
                   </p>
                   
                   {role && (
-                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
-                      <Shield className="w-4 h-4 mr-1" />
+                    <div className="inline-flex items-center px-2.5 lg:px-3 py-1 rounded-full text-xs lg:text-sm font-medium bg-blue-100 text-blue-800 mb-3 lg:mb-4">
+                      <Shield className="w-3 lg:w-4 h-3 lg:h-4 mr-1" />
                       {role.charAt(0).toUpperCase() + role.slice(1)}
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-3 mt-6">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Mail className="w-4 h-4 mr-3" />
-                    <span>{user.primaryEmailAddress?.emailAddress}</span>
+                <div className="space-y-2 lg:space-y-3 mt-4 lg:mt-6">
+                  <div className="flex items-center text-xs lg:text-sm text-gray-600">
+                    <Mail className="w-3 lg:w-4 h-3 lg:h-4 mr-2 lg:mr-3" />
+                    <span className="truncate">{user.primaryEmailAddress?.emailAddress}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="w-4 h-4 mr-3" />
+                  <div className="flex items-center text-xs lg:text-sm text-gray-600">
+                    <Calendar className="w-3 lg:w-4 h-3 lg:h-4 mr-2 lg:mr-3" />
                     <span>Joined {new Date(user.createdAt!).toLocaleDateString()}</span>
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-3">
+                <div className="mt-4 lg:mt-6 space-y-2 lg:space-y-3">
                   {role === 'admin' && (
                     <Button 
                       onClick={() => router.push('/admin')}
@@ -158,12 +158,12 @@ export default function MySpacePage() {
 
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border">
-                <div className="p-6 border-b">
-                  <h3 className="text-lg font-semibold text-gray-900">My Orders</h3>
-                  <p className="text-gray-600 text-sm">Track your recent orders</p>
+                <div className="p-4 lg:p-6 border-b">
+                  <h3 className="text-base lg:text-lg font-semibold text-gray-900">My Orders</h3>
+                  <p className="text-gray-600 text-xs lg:text-sm">Track your recent orders</p>
                 </div>
 
-                <div className="p-6">
+                <div className="p-4 lg:p-6">
                   {loadingOrders ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
@@ -173,37 +173,37 @@ export default function MySpacePage() {
                       {orders.slice(0, 5).map((order) => (
                         <div 
                           key={order._id} 
-                          className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="border rounded-lg p-3 lg:p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                           onClick={() => router.push(`/order/${order._id}`)}
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h4 className="font-medium text-gray-900">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-gray-900 text-sm lg:text-base">
                                 Order #{order._id.slice(-6)}
                               </h4>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-xs lg:text-sm text-gray-500">
                                 {new Date(order.createdAt).toLocaleDateString()}
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-gray-900">₹{order.totalAmount}</p>
+                            <div className="text-right ml-2">
+                              <p className="font-semibold text-gray-900 text-sm lg:text-base">₹{order.totalAmount}</p>
                               <span className={`inline-block px-2 py-1 text-xs rounded-full ${getStatusColor(order.status)}`}>
                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </span>
                             </div>
                           </div>
                           
-                          <div className="text-sm text-gray-600">
+                          <div className="text-xs lg:text-sm text-gray-600">
                             {order.items?.length} item{order.items?.length !== 1 ? 's' : ''}
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h4 className="text-lg font-medium text-gray-900 mb-2">No Orders Yet</h4>
-                      <p className="text-gray-600 mb-4">You haven't placed any orders yet.</p>
+                    <div className="text-center py-6 lg:py-8">
+                      <Package className="w-10 lg:w-12 h-10 lg:h-12 text-gray-400 mx-auto mb-3 lg:mb-4" />
+                      <h4 className="text-base lg:text-lg font-medium text-gray-900 mb-2">No Orders Yet</h4>
+                      <p className="text-sm lg:text-base text-gray-600 mb-3 lg:mb-4">You haven't placed any orders yet.</p>
                       <Button onClick={() => router.push('/products')}>
                         Browse Menu
                       </Button>
