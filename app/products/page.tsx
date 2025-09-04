@@ -148,51 +148,74 @@ export default function ProductsPage() {
             <p className="text-sm lg:text-base text-gray-600">Browse our complete collection</p>
           </div>
 
-          {/* Search Bar */}
-          <div className="mb-4 lg:mb-6">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 lg:py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Filters */}
+          {/* Search and Filters Grid */}
           <div className="bg-white rounded-lg border border-gray-200 p-3 lg:p-4 mb-4 lg:mb-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-gray-500" />
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">All Categories</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4">
+              {/* Search Bar */}
+              <div className="md:col-span-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 lg:py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <SortAsc className="w-4 h-4 text-gray-500" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="name">Sort by Name</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </select>
+              {/* Category Filter */}
+              <div className="md:col-span-1">
+                <div className="flex items-center space-x-2">
+                  <Filter className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 lg:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map((category) => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+              
+              {/* Sort Filter */}
+              <div className="md:col-span-1">
+                <div className="flex items-center space-x-2">
+                  <SortAsc className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 lg:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="name">Sort by Name</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            {/* Results Count */}
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-sm text-gray-600">
+                Showing {filteredProducts.length} of {products.length} products
+                {searchQuery && (
+                  <span className="ml-1">
+                    for "{searchQuery}"
+                  </span>
+                )}
+                {selectedCategory !== 'all' && (
+                  <span className="ml-1">
+                    in {categories.find(cat => cat._id === selectedCategory)?.name}
+                  </span>
+                )}
+              </p>
             </div>
           </div>
 
@@ -209,19 +232,31 @@ export default function ProductsPage() {
                       onError={(e) => {
                         e.currentTarget.style.display = 'none'
                         e.currentTarget.parentElement!.innerHTML = `
-                          <div class="w-full h-full bg-gray-100 flex items-center justify-center">
-                            <svg class="w-6 lg:w-8 h-6 lg:h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M2 21h19v-3H2v3zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zm-8.5 0h-3V6h3v2zm7.5 0h-3V6h3v2z"/>
-                            </svg>
+                          <div class="w-full h-full bg-gradient-to-br from-orange-50 to-yellow-50 flex flex-col items-center justify-center p-2">
+                            <div class="w-8 lg:w-12 h-8 lg:h-12 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-full flex items-center justify-center mb-1 lg:mb-2">
+                              <svg class="w-4 lg:w-6 h-4 lg:h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.5 3H6c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12.5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM18 19H6V5h12v14zM8 15h8v2H8v-2zm0-4h8v2H8v-2zm0-4h5v2H8V7z"/>
+                              </svg>
+                            </div>
+                            <div class="text-center">
+                              <p class="text-xs lg:text-sm font-medium text-orange-600 mb-0.5">Fresh & Delicious</p>
+                              <p class="text-xs text-orange-500">Premium Quality</p>
+                            </div>
                           </div>
                         `
                       }}
                     />
                   ) : (
-                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                      <svg className="w-6 lg:w-8 h-6 lg:h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M2 21h19v-3H2v3zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zm-8.5 0h-3V6h3v2zm7.5 0h-3V6h3v2z"/>
-                      </svg>
+                    <div className="w-full h-full bg-gradient-to-br from-orange-50 to-yellow-50 flex flex-col items-center justify-center p-2">
+                      <div className="w-8 lg:w-12 h-8 lg:h-12 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-full flex items-center justify-center mb-1 lg:mb-2">
+                        <svg className="w-4 lg:w-6 h-4 lg:h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M18.5 3H6c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12.5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM18 19H6V5h12v14zM8 15h8v2H8v-2zm0-4h8v2H8v-2zm0-4h5v2H8V7z"/>
+                        </svg>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs lg:text-sm font-medium text-orange-600 mb-0.5">Fresh & Delicious</p>
+                        <p className="text-xs text-orange-500">Premium Quality</p>
+                      </div>
                     </div>
                   )}
                 </div>
