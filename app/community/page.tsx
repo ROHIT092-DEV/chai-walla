@@ -3,7 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import Navbar from '@/components/Navbar';
 import { useEffect, useState } from 'react';
-import { Star, MessageCircle, ThumbsUp, ThumbsDown, Coffee, Plus, Image, Video, Send, Heart } from 'lucide-react';
+import { Star, MessageCircle, Coffee, Plus, Image, Video, Send, Heart, Smile } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Post {
@@ -13,7 +13,7 @@ interface Post {
   image?: string;
   video?: string;
   likes: string[];
-  dislikes: string[];
+  reactions: { [emoji: string]: string[] };
   comments: Array<{
     _id: string;
     userId: string;
@@ -34,9 +34,25 @@ export default function CommunityPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string>('');
   const [expandedComments, setExpandedComments] = useState<{[key: string]: boolean}>({});
+  const [showEmojiPicker, setShowEmojiPicker] = useState<{[key: string]: boolean}>({});
+  const [showLikesModal, setShowLikesModal] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as Element).closest('.likes-modal')) {
+        setShowLikesModal({});
+      }
+      if (!(event.target as Element).closest('.emoji-picker')) {
+        setShowEmojiPicker({});
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const fetchPosts = async () => {
@@ -92,18 +108,34 @@ export default function CommunityPage() {
     }
   };
 
-  const handleReaction = async (postId: string, reaction: 'like' | 'dislike') => {
+  const toggleLike = async (postId: string) => {
     if (!user) return;
     
     try {
       await fetch('/api/posts/like', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId, reaction })
+        body: JSON.stringify({ postId })
       });
       fetchPosts();
     } catch (error) {
-      console.error('Error updating reaction:', error);
+      console.error('Error toggling like:', error);
+    }
+  };
+
+  const addReaction = async (postId: string, emoji: string) => {
+    if (!user) return;
+    
+    try {
+      await fetch('/api/posts/react', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId, emoji })
+      });
+      setShowEmojiPicker({ ...showEmojiPicker, [postId]: false });
+      fetchPosts();
+    } catch (error) {
+      console.error('Error adding reaction:', error);
     }
   };
 
@@ -280,7 +312,7 @@ export default function CommunityPage() {
               {posts.map((post, index) => (
                 <motion.div
                   key={post._id}
-                  className="bg-white rounded-xl lg:rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 mx-2 lg:mx-0"
+                  className="bg-white border border-gray-200 mb-6 mx-2 lg:mx-0"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -327,107 +359,189 @@ export default function CommunityPage() {
                       </div>
                     )}
                     
-                    <div className="flex items-center justify-between pt-3 lg:pt-4 border-t border-gray-100">
-                      <div className="flex items-center space-x-4 lg:space-x-6">
-                        <button
-                          onClick={() => handleReaction(post._id, 'like')}
-                          className={`flex items-center space-x-1.5 lg:space-x-2 transition-colors ${
-                            post.likes.includes(user?.id || '') 
-                              ? 'text-blue-600' 
-                              : 'text-gray-500 hover:text-blue-600'
-                          }`}
-                        >
-                          <ThumbsUp className={`w-4 lg:w-5 h-4 lg:h-5 ${
-                            post.likes.includes(user?.id || '') ? 'fill-current' : ''
-                          }`} />
-                          <span className="font-medium text-sm lg:text-base">{post.likes.length}</span>
+                    {/* Action buttons */}
+                    <div className="flex items-center justify-between pt-3 lg:pt-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <button
+                            onClick={() => toggleLike(post._id)}
+                            className="relative transition-transform hover:scale-110 active:scale-95"
+                          >
+                            <Heart className={`w-6 h-6 ${
+                              post.likes.includes(user?.id || '') 
+                                ? 'text-red-500 fill-current' 
+                                : 'text-gray-900 hover:text-gray-600'
+                            }`} />
+                            {post.likes.length > 0 && (
+                              <span 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowLikesModal({ ...showLikesModal, [post._id]: !showLikesModal[post._id] });
+                                }}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold cursor-pointer hover:bg-red-600"
+                              >
+                                {post.likes.length > 99 ? '99+' : post.likes.length}
+                              </span>
+                            )}
+                          </button>
+                          
+                          {/* Likes modal */}
+                          {showLikesModal[post._id] && (
+                            <div className="likes-modal absolute top-8 left-0 bg-white border border-gray-200 rounded-lg shadow-lg z-20 w-48 max-h-40 overflow-y-auto">
+                              <div className="p-3">
+                                <h4 className="font-semibold text-sm text-gray-900 mb-2">Liked by</h4>
+                                <div className="space-y-2">
+                                  {post.likes.map((likeUserId, index) => (
+                                    <div key={likeUserId} className="flex items-center space-x-2">
+                                      <div className="w-6 h-6 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white font-bold text-xs">
+                                          {index + 1}
+                                        </span>
+                                      </div>
+                                      <span className="text-sm text-gray-700 truncate">
+                                        User {index + 1}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <button className="relative transition-transform hover:scale-110 active:scale-95">
+                          <MessageCircle className="w-6 h-6 text-gray-900 hover:text-gray-600" />
+                          {post.comments.length > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                              {post.comments.length > 99 ? '99+' : post.comments.length}
+                            </span>
+                          )}
                         </button>
                         
-                        <button
-                          onClick={() => handleReaction(post._id, 'dislike')}
-                          className={`flex items-center space-x-1.5 lg:space-x-2 transition-colors ${
-                            (post.dislikes || []).includes(user?.id || '') 
-                              ? 'text-red-600' 
-                              : 'text-gray-500 hover:text-red-600'
-                          }`}
-                        >
-                          <ThumbsDown className={`w-4 lg:w-5 h-4 lg:h-5 ${
-                            (post.dislikes || []).includes(user?.id || '') ? 'fill-current' : ''
-                          }`} />
-                          <span className="font-medium text-sm lg:text-base">{(post.dislikes || []).length}</span>
-                        </button>
-                        
-                        <div className="flex items-center space-x-1.5 lg:space-x-2 text-gray-500">
-                          <MessageCircle className="w-4 lg:w-5 h-4 lg:h-5" />
-                          <span className="font-medium text-sm lg:text-base">{post.comments.length}</span>
+                        <div className="relative group">
+                          <button
+                            onClick={() => setShowEmojiPicker({ ...showEmojiPicker, [post._id]: !showEmojiPicker[post._id] })}
+                            className="relative transition-transform hover:scale-110 active:scale-95"
+                          >
+                            <Smile className="w-6 h-6 text-gray-900 hover:text-yellow-600" />
+                            {Object.values(post.reactions || {}).flat().length > 0 && (
+                              <span className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                {Object.values(post.reactions || {}).flat().length}
+                              </span>
+                            )}
+                          </button>
+                          
+                          {/* Hover tooltip showing user's reaction */}
+                          {(() => {
+                            const userReaction = Object.entries(post.reactions || {}).find(([emoji, users]) => 
+                              users.includes(user?.id || '')
+                            );
+                            return userReaction && (
+                              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                You reacted with {userReaction[0]}
+                              </div>
+                            );
+                          })()}
+                          
+                          {showEmojiPicker[post._id] && (
+                            <div className="emoji-picker absolute top-8 left-0 bg-white border border-gray-200 rounded-lg p-2 shadow-lg z-10 flex space-x-1">
+                              {['😍', '😂', '😮', '😢', '😡', '👍'].map((emoji) => {
+                                const isSelected = Object.entries(post.reactions || {}).some(([e, users]) => 
+                                  e === emoji && users.includes(user?.id || '')
+                                );
+                                return (
+                                  <button
+                                    key={emoji}
+                                    onClick={() => addReaction(post._id, emoji)}
+                                    className={`text-xl hover:scale-125 transition-transform p-1 rounded ${
+                                      isSelected 
+                                        ? 'bg-yellow-200 ring-2 ring-yellow-400' 
+                                        : 'hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {emoji}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       </div>
+                      
+
                     </div>
+                    
+                    {/* Reactions display */}
+                    {post.reactions && Object.keys(post.reactions).length > 0 && (
+                      <div className="flex items-center space-x-2 mt-2">
+                        {Object.entries(post.reactions).map(([emoji, users]) => (
+                          <div key={emoji} className="flex items-center space-x-1 bg-gray-100 rounded-full px-2 py-1">
+                            <span>{emoji}</span>
+                            <span className="text-xs text-gray-600">{users.length}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+
                     
                     {/* Comments */}
                     {post.comments.length > 0 && (
-                      <div className="mt-3 lg:mt-4 pt-3 lg:pt-4 border-t border-gray-100 space-y-2 lg:space-y-3">
-                        {(expandedComments[post._id] ? post.comments : post.comments.slice(0, 2)).map((comment) => (
-                          <div key={comment._id} className="flex items-start space-x-2 lg:space-x-3">
-                            <div className="w-7 lg:w-8 h-7 lg:h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-white font-bold text-xs lg:text-sm">
-                                {comment.userId?.charAt(0).toUpperCase() || 'U'}
-                              </span>
-                            </div>
-                            <div className="flex-1 min-w-0 bg-gray-50 rounded-lg px-3 py-2">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <span className="font-medium text-xs lg:text-sm text-gray-900">
-                                  User
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {new Date(comment.createdAt).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className="text-xs lg:text-sm text-gray-700 break-words">{comment.comment}</p>
-                            </div>
+                      <div className="mt-2 space-y-1">
+                        {post.comments.length > 2 && !expandedComments[post._id] && (
+                          <button
+                            onClick={() => setExpandedComments({ ...expandedComments, [post._id]: true })}
+                            className="text-gray-500 hover:text-gray-700 text-sm"
+                          >
+                            View all {post.comments.length} comments
+                          </button>
+                        )}
+                        
+                        {(expandedComments[post._id] ? post.comments : post.comments.slice(-2)).map((comment) => (
+                          <div key={comment._id} className="text-sm">
+                            <span className="font-semibold text-gray-900 mr-2">user</span>
+                            <span className="text-gray-900">{comment.comment}</span>
                           </div>
                         ))}
                         
-                        {post.comments.length > 2 && (
+                        {expandedComments[post._id] && post.comments.length > 2 && (
                           <button
-                            onClick={() => setExpandedComments({ ...expandedComments, [post._id]: !expandedComments[post._id] })}
-                            className="text-gray-500 hover:text-gray-700 text-sm font-medium ml-10 lg:ml-11"
+                            onClick={() => setExpandedComments({ ...expandedComments, [post._id]: false })}
+                            className="text-gray-500 hover:text-gray-700 text-sm"
                           >
-                            {expandedComments[post._id] 
-                              ? 'View less' 
-                              : `View ${post.comments.length - 2} more comments`
-                            }
+                            Hide comments
                           </button>
                         )}
                       </div>
                     )}
                     
-                    {/* Add Comment */}
+                    {/* Time ago */}
+                    <div className="mt-1">
+                      <span className="text-xs text-gray-500 uppercase">
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    
+                    {/* Add Comment - Instagram style */}
                     {user && (
-                      <div className="mt-3 lg:mt-4 pt-3 lg:pt-4 border-t border-gray-100">
-                        <div className="flex items-start space-x-2 lg:space-x-3">
-                          <div className="w-8 lg:w-9 h-8 lg:h-9 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-bold text-xs lg:text-sm">
-                              {user.emailAddresses[0]?.emailAddress?.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="flex-1 flex items-center space-x-2">
-                            <input
-                              type="text"
-                              value={commentInputs[post._id] || ''}
-                              onChange={(e) => setCommentInputs({ ...commentInputs, [post._id]: e.target.value })}
-                              placeholder="Write a comment..."
-                              className="flex-1 px-3 lg:px-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white"
-                              onKeyPress={(e) => e.key === 'Enter' && addComment(post._id)}
-                            />
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="text"
+                            value={commentInputs[post._id] || ''}
+                            onChange={(e) => setCommentInputs({ ...commentInputs, [post._id]: e.target.value })}
+                            placeholder="Add a comment..."
+                            className="flex-1 text-sm border-none outline-none bg-transparent placeholder-gray-500"
+                            onKeyPress={(e) => e.key === 'Enter' && addComment(post._id)}
+                          />
+                          {commentInputs[post._id]?.trim() && (
                             <button
                               onClick={() => addComment(post._id)}
-                              disabled={!commentInputs[post._id]?.trim()}
-                              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white p-2 rounded-full transition-all duration-300 flex-shrink-0"
+                              className="text-blue-500 hover:text-blue-700 font-semibold text-sm"
                             >
-                              <Send className="w-4 h-4" />
+                              Post
                             </button>
-                          </div>
+                          )}
                         </div>
                       </div>
                     )}
