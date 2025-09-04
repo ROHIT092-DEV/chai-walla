@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { user } = useUser();
   const { items, getTotalPrice, clearCart } = useCart();
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleCashPayment = async () => {
@@ -41,13 +41,13 @@ export default function CheckoutPage() {
     }
   };
 
-  if (items.length === 0) {
+  if (!user || items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">Cart is Empty</h2>
-          <Button onClick={() => router.push('/products')}>
-            Continue Shopping
+          <h2 className="text-xl font-bold mb-2">{!user ? 'Please sign in' : 'Cart is Empty'}</h2>
+          <Button onClick={() => router.push(!user ? '/sign-in' : '/products')}>
+            {!user ? 'Sign In' : 'Continue Shopping'}
           </Button>
         </div>
       </div>

@@ -33,15 +33,6 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
   const [loading, setLoading] = useState(true);
   const resolvedParams = use(params);
 
-  useEffect(() => {
-    fetchOrder();
-    
-    // Setup polling for real-time updates
-    const interval = setInterval(fetchOrder, 500);
-    
-    return () => clearInterval(interval);
-  }, [resolvedParams.id, fetchOrder]);
-
   const fetchOrder = async () => {
     try {
       const response = await fetch(`/api/orders/${resolvedParams.id}`);
@@ -55,6 +46,15 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchOrder();
+    
+    // Setup polling for real-time updates
+    const interval = setInterval(fetchOrder, 500);
+    
+    return () => clearInterval(interval);
+  }, [resolvedParams.id, fetchOrder]);
 
   const markPaymentCompleted = async () => {
     try {
