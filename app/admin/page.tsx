@@ -3,7 +3,10 @@
 import { useUser } from '@clerk/nextjs';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import Navbar from '@/components/Navbar';
+import Loading from '@/components/Loading';
+import { fetchWithDeduplication } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,6 +77,7 @@ export default function AdminPage() {
   });
   const [reasonInputs, setReasonInputs] = useState<{[key: string]: string}>({});
   const [showReasonInput, setShowReasonInput] = useState<{[key: string]: boolean}>({});
+  const fetchedRef = useRef({ products: false, categories: false, orders: false });
 
   useEffect(() => {
     if (isLoaded && !loading) {
@@ -86,32 +90,47 @@ export default function AdminPage() {
   }, [user, role, isLoaded, loading, router]);
 
   const fetchProducts = async () => {
+    if (fetchedRef.current.products) return;
+    fetchedRef.current.products = true;
+    
     try {
-      const response = await fetch('/api/products');
+      const response = await fetchWithDeduplication('/api/products');
       const data = await response.json();
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
+    } finally {
+      fetchedRef.current.products = false;
     }
   };
 
   const fetchCategories = async () => {
+    if (fetchedRef.current.categories) return;
+    fetchedRef.current.categories = true;
+    
     try {
-      const response = await fetch('/api/categories');
+      const response = await fetchWithDeduplication('/api/categories');
       const data = await response.json();
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);
+    } finally {
+      fetchedRef.current.categories = false;
     }
   };
 
   const fetchOrders = async () => {
+    if (fetchedRef.current.orders) return;
+    fetchedRef.current.orders = true;
+    
     try {
-      const response = await fetch('/api/orders');
+      const response = await fetchWithDeduplication('/api/orders');
       const data = await response.json();
       setOrders(data);
     } catch (error) {
       console.error('Error fetching orders:', error);
+    } finally {
+      fetchedRef.current.orders = false;
     }
   };
 
@@ -119,13 +138,6 @@ export default function AdminPage() {
     fetchProducts();
     fetchCategories();
     fetchOrders();
-
-    // Setup polling for real-time updates
-    const interval = setInterval(() => {
-      fetchOrders();
-    }, 500); // Poll every 500ms for near real-time
-
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -140,11 +152,7 @@ export default function AdminPage() {
   }, [searchParams]);
 
   if (!mounted) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <Loading />;
   }
 
   const updateOrderStatus = async (orderId: string, status: string, reason?: string) => {
@@ -332,11 +340,7 @@ export default function AdminPage() {
   };
 
   if (!isLoaded || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!user || role !== 'admin') {
@@ -345,115 +349,87 @@ export default function AdminPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
-          <div className="flex justify-between items-center mb-6">
+      <Navbar />
+      <main className="min-h-screen bg-white pt-16">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-12">
             <button
               onClick={() => router.push('/')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center space-x-2 text-gray-500 hover:text-black transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-lg font-medium">Back to Home</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium uppercase tracking-wide">BACK TO HOME</span>
             </button>
           </div>
 
           {/* Admin Navigation */}
-          <div className="flex space-x-1 mb-8 bg-white border rounded-lg p-1 shadow-sm overflow-x-auto">
+          <div className="flex space-x-8 mb-12 border-b border-gray-100 pb-4">
             <button
               onClick={() => {
                 setActiveSection('dashboard');
                 router.push('/admin?section=dashboard');
               }}
-              className={`flex flex-col sm:flex-row items-center justify-center sm:space-x-2 px-2 sm:px-4 py-2 sm:py-3 rounded-md text-xs sm:text-sm font-medium transition-colors min-w-0 flex-shrink-0 ${
+              className={`text-sm font-medium uppercase tracking-wide transition-colors ${
                 activeSection === 'dashboard'
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'text-black border-b-2 border-black pb-4 -mb-4'
+                  : 'text-gray-500 hover:text-black'
               }`}
             >
-              <BarChart3 className="w-4 h-4 mb-1 sm:mb-0" />
-              <span className="text-xs sm:text-sm whitespace-nowrap">
-                Dashboard
-              </span>
+              DASHBOARD
             </button>
             <button
               onClick={() => {
                 setActiveSection('orders');
                 router.push('/admin?section=orders');
               }}
-              className={`flex flex-col sm:flex-row items-center justify-center sm:space-x-2 px-2 sm:px-4 py-2 sm:py-3 rounded-md text-xs sm:text-sm font-medium transition-colors min-w-0 flex-shrink-0 ${
+              className={`text-sm font-medium uppercase tracking-wide transition-colors ${
                 activeSection === 'orders'
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'text-black border-b-2 border-black pb-4 -mb-4'
+                  : 'text-gray-500 hover:text-black'
               }`}
             >
-              <Users className="w-4 h-4 mb-1 sm:mb-0" />
-              <span className="text-xs sm:text-sm whitespace-nowrap">
-                Orders
-              </span>
+              ORDERS
             </button>
             <button
               onClick={() => {
                 setActiveSection('products');
                 router.push('/admin?section=products');
               }}
-              className={`flex flex-col sm:flex-row items-center justify-center sm:space-x-2 px-2 sm:px-4 py-2 sm:py-3 rounded-md text-xs sm:text-sm font-medium transition-colors min-w-0 flex-shrink-0 ${
+              className={`text-sm font-medium uppercase tracking-wide transition-colors ${
                 activeSection === 'products'
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'text-black border-b-2 border-black pb-4 -mb-4'
+                  : 'text-gray-500 hover:text-black'
               }`}
             >
-              <Package className="w-4 h-4 mb-1 sm:mb-0" />
-              <span className="text-xs sm:text-sm whitespace-nowrap">
-                Products
-              </span>
+              PRODUCTS
             </button>
           </div>
 
           {/* Dashboard Section */}
           {activeSection === 'dashboard' && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Analytics Overview
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-lg border shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Products
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {products.length}
-                      </p>
-                    </div>
-                    <Package className="w-8 h-8 text-blue-500" />
+            <div>
+              <h1 className="text-3xl md:text-5xl font-light mb-12">Analytics Overview</h1>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="border border-gray-200 p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <Package className="w-6 h-6 text-black" />
                   </div>
+                  <div className="text-3xl font-light mb-2">{products.length}</div>
+                  <div className="text-sm text-gray-500 uppercase tracking-wide">TOTAL PRODUCTS</div>
                 </div>
-                <div className="bg-white p-6 rounded-lg border shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Categories
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {categories.length}
-                      </p>
-                    </div>
-                    <Tag className="w-8 h-8 text-green-500" />
+                <div className="border border-gray-200 p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <Tag className="w-6 h-6 text-black" />
                   </div>
+                  <div className="text-3xl font-light mb-2">{categories.length}</div>
+                  <div className="text-sm text-gray-500 uppercase tracking-wide">CATEGORIES</div>
                 </div>
-                <div className="bg-white p-6 rounded-lg border shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Low Stock Items
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {products.filter((p) => p.stock <= 5).length}
-                      </p>
-                    </div>
-                    <BarChart3 className="w-8 h-8 text-orange-500" />
+                <div className="border border-gray-200 p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <BarChart3 className="w-6 h-6 text-black" />
                   </div>
+                  <div className="text-3xl font-light mb-2">{products.filter((p) => p.stock <= 5).length}</div>
+                  <div className="text-sm text-gray-500 uppercase tracking-wide">LOW STOCK ITEMS</div>
                 </div>
               </div>
             </div>
@@ -461,15 +437,13 @@ export default function AdminPage() {
 
           {/* Orders Management Section */}
           {activeSection === 'orders' && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Orders Management
-              </h2>
-              <div className="space-y-4">
+            <div>
+              <h1 className="text-3xl md:text-5xl font-light mb-12">Orders Management</h1>
+              <div className="space-y-6">
                 {orders.map((order) => (
                   <div
                     key={order._id}
-                    className="bg-white rounded-lg border shadow-sm"
+                    className="border border-gray-200 p-4 md:p-6"
                   >
                     <div className="p-4 border-b">
                       <div className="flex justify-between items-start mb-3">
@@ -699,14 +673,10 @@ export default function AdminPage() {
                 ))}
 
                 {orders.length === 0 && (
-                  <div className="bg-white p-8 rounded-lg border text-center">
-                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No Orders
-                    </h3>
-                    <p className="text-gray-600">
-                      No orders have been placed yet.
-                    </p>
+                  <div className="text-center py-20">
+                    <Users className="w-16 h-16 text-gray-300 mx-auto mb-6" />
+                    <h3 className="text-xl font-light mb-3">No Orders</h3>
+                    <p className="text-gray-500">No orders have been placed yet</p>
                   </div>
                 )}
               </div>
@@ -715,39 +685,43 @@ export default function AdminPage() {
 
           {/* Product Management Section */}
           {activeSection === 'products' && (
-            <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl md:text-5xl font-light mb-12">Product Management</h1>
               {/* Tabs */}
-              <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-md w-fit">
+              <div className="flex space-x-8 mb-12 border-b border-gray-100 pb-4">
                 <button
                   onClick={() => setActiveTab('products')}
-                  className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                  className={`text-sm font-medium uppercase tracking-wide transition-colors ${
                     activeTab === 'products'
-                      ? 'bg-white shadow-sm font-medium'
-                      : 'text-gray-600'
+                      ? 'text-black border-b-2 border-black pb-4 -mb-4'
+                      : 'text-gray-500 hover:text-black'
                   }`}
                 >
-                  Products
+                  PRODUCTS
                 </button>
                 <button
                   onClick={() => setActiveTab('categories')}
-                  className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                  className={`text-sm font-medium uppercase tracking-wide transition-colors ${
                     activeTab === 'categories'
-                      ? 'bg-white shadow-sm font-medium'
-                      : 'text-gray-600'
+                      ? 'text-black border-b-2 border-black pb-4 -mb-4'
+                      : 'text-gray-500 hover:text-black'
                   }`}
                 >
-                  Categories
+                  CATEGORIES
                 </button>
               </div>
 
               {activeTab === 'products' && (
                 <>
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-medium">Products</h2>
-                    <Button size="sm" onClick={() => setShowProductForm(true)}>
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Product
-                    </Button>
+                  <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-xl font-medium">PRODUCTS</h2>
+                    <button 
+                      onClick={() => setShowProductForm(true)}
+                      className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors flex items-center space-x-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>ADD PRODUCT</span>
+                    </button>
                   </div>
 
                   {showProductForm && (
@@ -1007,11 +981,11 @@ export default function AdminPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {products.map((product) => (
                       <div
                         key={product._id}
-                        className="bg-white rounded-lg border hover:border-gray-300 transition-colors"
+                                              className="border border-gray-200 hover:border-gray-400 transition-colors"
                       >
                         {product.image ? (
                           <div className="aspect-square bg-gray-100 rounded-t-lg overflow-hidden">

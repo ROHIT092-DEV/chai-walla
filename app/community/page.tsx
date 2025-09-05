@@ -2,6 +2,7 @@
 
 import { useUser } from '@clerk/nextjs';
 import Navbar from '@/components/Navbar';
+import Loading from '@/components/Loading';
 import { useEffect, useState } from 'react';
 import { Star, MessageCircle, Coffee, Plus, Image, Video, Send, Heart, Smile, MoreVertical, Trash2, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -265,36 +266,29 @@ export default function CommunityPage() {
   };
 
   if (loading) {
-    return (
-      <>
-        <Navbar />
-        <div className="min-h-screen bg-gray-50 pt-16 pb-20 lg:pt-20 lg:pb-6 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-        </div>
-      </>
-    );
+    return <Loading />;
   }
 
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gray-50 pt-16 pb-20 lg:pt-20 lg:pb-6">
-        <div className="max-w-4xl mx-auto px-3 lg:px-4 py-4 lg:py-8">
-          <div className="text-center mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-3 lg:mb-4">
-              Tea Community
+      <main className="min-h-screen bg-white pt-16 pb-20 lg:pt-20 lg:pb-6">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center mb-12">
+            <h1 className="text-3xl md:text-5xl font-light mb-4">
+              Community
             </h1>
-            <p className="text-base lg:text-xl text-gray-600 max-w-2xl mx-auto mb-4 lg:mb-6 px-4">
-              Share your tea moments and connect with fellow tea enthusiasts
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8 font-light">
+              Share your tea moments and connect with fellow enthusiasts
             </p>
             
             {user && (
               <button
                 onClick={() => setShowCreatePost(!showCreatePost)}
-                className="bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white px-4 lg:px-6 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl font-bold text-sm lg:text-base transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center space-x-2 mx-auto"
+                className="bg-black text-white px-8 py-3 font-medium hover:bg-gray-800 transition-colors flex items-center space-x-2 mx-auto"
               >
-                <Plus className="w-4 lg:w-5 h-4 lg:h-5" />
-                <span>Share Your Tea Story</span>
+                <Plus className="w-4 h-4" />
+                <span>CREATE POST</span>
               </button>
             )}
           </div>
@@ -302,33 +296,33 @@ export default function CommunityPage() {
           {/* Create Post Form */}
           {showCreatePost && user && (
             <motion.div
-              className="bg-white rounded-xl lg:rounded-2xl shadow-lg border border-gray-100 p-4 lg:p-6 mb-6 lg:mb-8 mx-2 lg:mx-0"
+              className="border border-gray-200 p-6 mb-12"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex items-start space-x-3 lg:space-x-4">
-                <div className="w-10 lg:w-12 h-10 lg:h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-sm lg:text-lg">
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-medium text-sm">
                     {user.emailAddresses[0]?.emailAddress?.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1">
                   <textarea
                     value={newPost.content}
                     onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                    placeholder="Share your tea experience..."
-                    className="w-full p-3 lg:p-4 border border-gray-200 rounded-lg lg:rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm lg:text-base"
-                    rows={3}
+                    placeholder="Share your tea experience"
+                    className="w-full p-4 border border-gray-200 resize-none focus:outline-none focus:border-black transition-colors"
+                    rows={4}
                   />
                   
                   {filePreview && (
-                    <div className="mt-3 relative">
+                    <div className="mt-4 relative">
                       {selectedFile?.type.startsWith('image/') ? (
-                        <img src={filePreview} alt="Preview" className="w-full max-h-48 object-cover rounded-lg" loading="lazy" />
+                        <img src={filePreview} alt="Preview" className="w-full max-h-64 object-cover" loading="lazy" />
                       ) : (
-                        <video src={filePreview} className="w-full max-h-48 rounded-lg" controls preload="metadata" />
+                        <video src={filePreview} className="w-full max-h-64" controls preload="metadata" />
                       )}
                       <button
                         onClick={() => {
@@ -336,18 +330,18 @@ export default function CommunityPage() {
                           setFilePreview('');
                           setNewPost({ ...newPost, image: '', video: '' });
                         }}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                        className="absolute top-2 right-2 bg-black text-white w-6 h-6 flex items-center justify-center text-sm"
                       >
                         ×
                       </button>
                     </div>
                   )}
                   
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mt-3 lg:mt-4 space-y-3 lg:space-y-0">
-                    <div className="flex items-center space-x-2 lg:space-x-4">
-                      <label className="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer transition-colors">
-                        <Image className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm text-gray-600">Photo</span>
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center space-x-2 text-sm text-gray-500 hover:text-black cursor-pointer transition-colors">
+                        <Image className="w-4 h-4" />
+                        <span>PHOTO</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -356,9 +350,9 @@ export default function CommunityPage() {
                         />
                       </label>
                       
-                      <label className="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer transition-colors">
-                        <Video className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm text-gray-600">Video</span>
+                      <label className="flex items-center space-x-2 text-sm text-gray-500 hover:text-black cursor-pointer transition-colors">
+                        <Video className="w-4 h-4" />
+                        <span>VIDEO</span>
                         <input
                           type="file"
                           accept="video/*"
@@ -368,7 +362,7 @@ export default function CommunityPage() {
                       </label>
                     </div>
                     
-                    <div className="flex items-center space-x-2 lg:space-x-3">
+                    <div className="flex items-center space-x-3">
                       <button
                         onClick={() => {
                           setShowCreatePost(false);
@@ -376,21 +370,21 @@ export default function CommunityPage() {
                           setFilePreview('');
                           setNewPost({ content: '', image: '', video: '' });
                         }}
-                        className="px-3 lg:px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                        className="text-sm text-gray-500 hover:text-black transition-colors"
                       >
-                        Cancel
+                        CANCEL
                       </button>
                       <button
                         onClick={createPost}
                         disabled={!newPost.content.trim() || isPosting}
-                        className="bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white px-4 lg:px-6 py-2 rounded-lg lg:rounded-xl font-medium text-sm lg:text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                        className="bg-black text-white px-6 py-2 font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                       >
                         {isPosting ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                         ) : (
                           <Send className="w-4 h-4" />
                         )}
-                        <span>{isPosting ? 'Posting...' : 'Post'}</span>
+                        <span>{isPosting ? 'POSTING...' : 'POST'}</span>
                       </button>
                     </div>
                   </div>
@@ -400,40 +394,40 @@ export default function CommunityPage() {
           )}
 
           {posts.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <MessageCircle className="w-10 h-10 text-white" />
+            <div className="text-center py-20">
+              <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+                <MessageCircle className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              <h3 className="text-xl font-light mb-3">
                 No Posts Yet
               </h3>
-              <p className="text-gray-600">
-                Be the first to share your tea story!
+              <p className="text-gray-500">
+                Be the first to share your tea story
               </p>
             </div>
           ) : (
-            <div className="space-y-4 lg:space-y-6">
+            <div className="space-y-8">
               {posts.map((post, index) => (
                 <motion.div
                   key={post._id}
-                  className="bg-white border border-gray-200 mb-6 mx-2 lg:mx-0"
+                  className="border-b border-gray-100 pb-8"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="p-4 lg:p-6">
-                    <div className="flex items-start space-x-3 lg:space-x-4 mb-3 lg:mb-4">
-                      <div className="w-10 lg:w-12 h-10 lg:h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-sm lg:text-lg">
+                  <div className="">
+                    <div className="flex items-start space-x-4 mb-4">
+                      <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-medium text-sm">
                           {post.user[0]?.email?.charAt(0).toUpperCase() || 'U'}
                         </span>
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 text-sm lg:text-base truncate">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-black">
                           {post.user[0]?.email?.split('@')[0] || 'Anonymous'}
                         </h4>
-                        <span className="text-xs lg:text-sm text-gray-500">
+                        <span className="text-sm text-gray-500">
                           {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                       </div>

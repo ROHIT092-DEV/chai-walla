@@ -17,52 +17,44 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Header - Instagram Style */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
-        <div className="px-4 py-3 flex items-center justify-between max-w-5xl mx-auto">
+      {/* Top Header - Starlink Style */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
+        <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
           <Link href="/" className="flex items-center">
-            <h1 className="text-2xl font-bold text-gray-900" style={{
-              fontFamily: 'Billabong, cursive',
-              fontSize: '28px',
-              fontWeight: '400',
-              letterSpacing: '0.5px'
-            }}>
-              TeaStall
+            <h1 className="text-xl font-medium text-black tracking-wide">
+              TEASTALL
             </h1>
           </Link>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-8">
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-6 mr-6">
-              <Link href="/" className={`flex items-center space-x-1 transition-colors ${
-                pathname === '/' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
+            <div className="hidden lg:flex items-center space-x-8">
+              <Link href="/" className={`text-sm font-medium tracking-wide transition-colors ${
+                pathname === '/' ? 'text-black' : 'text-gray-500 hover:text-black'
               }`}>
-                <Home className="w-6 h-6" />
-                <span className="font-normal text-base">Home</span>
+                HOME
               </Link>
               
-              <Link href="/products" className={`flex items-center space-x-1 transition-colors ${
-                pathname === '/products' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
+              <Link href="/products" className={`text-sm font-medium tracking-wide transition-colors ${
+                pathname === '/products' ? 'text-black' : 'text-gray-500 hover:text-black'
               }`}>
-                <Package className="w-6 h-6" />
-                <span className="font-normal text-base">Menu</span>
+                MENU
               </Link>
               
-              <Link href="/community" className={`flex items-center space-x-1 transition-colors ${
-                pathname === '/community' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
+              <Link href="/community" className={`text-sm font-medium tracking-wide transition-colors ${
+                pathname === '/community' ? 'text-black' : 'text-gray-500 hover:text-black'
               }`}>
-                <Users className="w-6 h-6" />
-                <span className="font-normal text-base">Community</span>
+                COMMUNITY
               </Link>
             </div>
             
             {isLoaded ? (
               user ? (
-                <div className="flex items-center space-x-4">
-                  <Link href="/cart" className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <ShoppingCart className="w-6 h-6 text-gray-700" />
+                <div className="flex items-center space-x-6">
+                  <Link href="/cart" className="relative hover:opacity-70 transition-opacity">
+                    <ShoppingCart className="w-5 h-5 text-black" />
                     {totalItems > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                      <span className="absolute -top-2 -right-2 w-4 h-4 bg-black text-white text-xs rounded-full flex items-center justify-center font-medium">
                         {totalItems > 9 ? '9+' : totalItems}
                       </span>
                     )}
@@ -70,47 +62,47 @@ export default function Navbar() {
                   
                   <Link 
                     href="/my-space" 
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="hover:opacity-70 transition-opacity"
                   >
-                    <UserCircle className="w-6 h-6 text-gray-700" />
+                    <UserCircle className="w-5 h-5 text-black" />
                   </Link>
                 </div>
               ) : (
-                <Link href="/sign-in" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
-                  Sign In
+                <Link href="/sign-in" className="bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors">
+                  SIGN IN
                 </Link>
               )
             ) : (
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
-                <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
+              <div className="flex items-center space-x-4">
+                <div className="w-5 h-5 bg-gray-200 animate-pulse"></div>
+                <div className="w-5 h-5 bg-gray-200 animate-pulse"></div>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      {/* Bottom Navigation - Mobile Only - Instagram Style */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
-        <div className="flex justify-center space-x-8 py-3">
-          <Link href="/" className="flex flex-col items-center justify-center py-2 transition-all">
-            <Home className={`w-6 h-6 mb-1 ${pathname === '/' ? 'text-gray-900' : 'text-gray-400'}`} />
-            <span className={`text-xs ${pathname === '/' ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
-              Home
+      {/* Bottom Navigation - Mobile Only - Starlink Style */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100">
+        <div className="flex justify-center space-x-12 py-4">
+          <Link href="/" className="flex flex-col items-center justify-center transition-opacity hover:opacity-70">
+            <Home className={`w-5 h-5 mb-1 ${pathname === '/' ? 'text-black' : 'text-gray-400'}`} />
+            <span className={`text-xs font-medium tracking-wide ${pathname === '/' ? 'text-black' : 'text-gray-400'}`}>
+              HOME
             </span>
           </Link>
           
-          <Link href="/products" className="flex flex-col items-center justify-center py-2 transition-all">
-            <Package className={`w-6 h-6 mb-1 ${pathname === '/products' ? 'text-gray-900' : 'text-gray-400'}`} />
-            <span className={`text-xs ${pathname === '/products' ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
-              Menu
+          <Link href="/products" className="flex flex-col items-center justify-center transition-opacity hover:opacity-70">
+            <Package className={`w-5 h-5 mb-1 ${pathname === '/products' ? 'text-black' : 'text-gray-400'}`} />
+            <span className={`text-xs font-medium tracking-wide ${pathname === '/products' ? 'text-black' : 'text-gray-400'}`}>
+              MENU
             </span>
           </Link>
           
-          <Link href="/community" className="flex flex-col items-center justify-center py-2 transition-all">
-            <Users className={`w-6 h-6 mb-1 ${pathname === '/community' ? 'text-gray-900' : 'text-gray-400'}`} />
-            <span className={`text-xs ${pathname === '/community' ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
-              Community
+          <Link href="/community" className="flex flex-col items-center justify-center transition-opacity hover:opacity-70">
+            <Users className={`w-5 h-5 mb-1 ${pathname === '/community' ? 'text-black' : 'text-gray-400'}`} />
+            <span className={`text-xs font-medium tracking-wide ${pathname === '/community' ? 'text-black' : 'text-gray-400'}`}>
+              COMMUNITY
             </span>
           </Link>
         </div>

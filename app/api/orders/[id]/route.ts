@@ -3,11 +3,12 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { broadcast } from '@/app/api/sse/route';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db('tea-stall');
-    const order = await db.collection('orders').findOne({ _id: new ObjectId(params.id) });
+    const order = await db.collection('orders').findOne({ _id: new ObjectId(id) });
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
@@ -20,14 +21,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const updates = await request.json();
     const client = await clientPromise;
     const db = client.db('tea-stall');
 
     const result = await db.collection('orders').updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: { ...updates, updatedAt: new Date() } }
     );
 
@@ -35,12 +37,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    const updatedOrder = await db.collection('orders').findOne({ _id: new ObjectId(params.id) });
+    const updatedOrder = await db.collection('orders').findOne({ _id: new ObjectId(id) });
     
     // Broadcast real-time update
     broadcast({
       type: 'order_update',
-      orderId: params.id,
+      orderId: id,
       order: updatedOrder
     });
     
