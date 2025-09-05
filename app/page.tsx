@@ -2,10 +2,8 @@
 
 import { useUser } from '@clerk/nextjs';
 import Navbar from '@/components/Navbar';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchWithDeduplication } from '@/lib/api-utils';
-
-export const dynamic = 'force-dynamic';
 import { Product } from '@/lib/product';
 import { useCart } from '@/contexts/CartContext';
 import {
@@ -18,6 +16,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   const { user } = useUser();
   const { addToCart } = useCart();
@@ -25,7 +25,6 @@ export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
-  const fetchedRef = useRef({ products: false, dashboard: false });
   const [dashboardData, setDashboardData] = useState({
     stats: {
       totalUsers: 0,
@@ -43,48 +42,30 @@ export default function Home() {
 
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([fetchFeaturedProducts(), fetchDashboardData()]);
-      setLoading(false);
+      try {
+        const [productsRes, dashboardRes] = await Promise.all([
+          fetchWithDeduplication('/api/products/featured'),
+          fetchWithDeduplication('/api/dashboard'),
+        ]);
+
+        if (productsRes.ok) {
+          const products = await productsRes.json();
+          setFeaturedProducts(Array.isArray(products) ? products : []);
+        }
+
+        if (dashboardRes.ok) {
+          const dashboard = await dashboardRes.json();
+          setDashboardData(dashboard);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
+
     loadData();
   }, []);
-
-  const fetchFeaturedProducts = async () => {
-    if (fetchedRef.current.products) return;
-    fetchedRef.current.products = true;
-    
-    try {
-      const response = await fetchWithDeduplication('/api/products/featured');
-      if (response.ok) {
-        const data = await response.json();
-        setFeaturedProducts(Array.isArray(data) ? data : []);
-      } else {
-        setFeaturedProducts([]);
-      }
-    } catch (error) {
-      console.error('Error fetching featured products:', error);
-      setFeaturedProducts([]);
-    } finally {
-      fetchedRef.current.products = false;
-    }
-  };
-
-  const fetchDashboardData = async () => {
-    if (fetchedRef.current.dashboard) return;
-    fetchedRef.current.dashboard = true;
-    
-    try {
-      const response = await fetchWithDeduplication('/api/dashboard');
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      fetchedRef.current.dashboard = false;
-    }
-  };
 
   const handleAddToCart = (product: Product) => {
     if (!user) {
@@ -118,7 +99,7 @@ export default function Home() {
       <Navbar />
 
       <main className="min-h-screen bg-black text-white pt-14 pb-20 lg:pt-16 lg:pb-0">
-        {/* Hero Section - Starlink Inspired */}
+        {/* Hero Section */}
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
 
