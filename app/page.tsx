@@ -41,11 +41,19 @@ export default function Home() {
   });
 
   useEffect(() => {
+    // Animate progress bar
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + Math.random() * 15;
+      });
+    }, 200);
+
     const loadData = async () => {
       try {
         const [productsRes, dashboardRes] = await Promise.all([
-          fetchWithDeduplication('/api/products/featured'),
-          fetchWithDeduplication('/api/dashboard'),
+          fetch('/api/products/featured'),
+          fetch('/api/dashboard'),
         ]);
 
         if (productsRes.ok) {
@@ -60,11 +68,15 @@ export default function Home() {
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
-        setLoading(false);
+        clearInterval(progressInterval);
+        setProgress(100);
+        setTimeout(() => setLoading(false), 300);
       }
     };
 
     loadData();
+    
+    return () => clearInterval(progressInterval);
   }, []);
 
   const handleAddToCart = (product: Product) => {
@@ -79,7 +91,7 @@ export default function Home() {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white flex items-center justify-center">
           {/* Progress Bar */}
           <div className="fixed top-14 left-0 right-0 z-40">
             <div className="h-0.5 bg-gray-100">
@@ -87,6 +99,18 @@ export default function Home() {
                 className="h-full bg-indigo-500 transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               ></div>
+            </div>
+          </div>
+          
+          {/* Loading Content */}
+          <div className="text-center">
+            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+              <Coffee className="w-8 h-8 text-white animate-pulse" />
+            </div>
+            <h2 className="text-2xl font-light mb-2">Loading Tea Collection</h2>
+            <p className="text-gray-500">Preparing your premium experience...</p>
+            <div className="mt-4 text-sm text-gray-400">
+              {Math.round(progress)}%
             </div>
           </div>
         </div>
