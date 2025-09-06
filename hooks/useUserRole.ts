@@ -22,5 +22,5 @@ export function useUserRole() {
     }
   }, [user, isLoaded])
 
-  return { role, loading, isLoaded
+  return { role, loading, isLoaded }
 }

@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = Math.min(parseInt(searchParams.get('limit') || '5'), 20); // Max 20 posts
+    const sort = searchParams.get('sort') || 'desc';
     
     const client = await clientPromise;
     const db = client.db('tea-stall');
@@ -50,12 +51,18 @@ export async function GET(request: NextRequest) {
             as: 'user'
           }
         },
-        { $sort: { createdAt: -1 } },
-        { $limit: limit }
+        { $sort: { createdAt: sort === 'asc' ? 1 : -1 } },
+        { $limit: limit },
+        {
+          $addFields: {
+            reactions: { $ifNull: ['$reactions', {}] }
+          }
+        }
       ]).toArray();
 
     return NextResponse.json(posts);
   } catch (error) {
-    return NextResponse.json([]);
+    console.error('Error fetching posts:', error);
+    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
   }
 }
